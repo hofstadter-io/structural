@@ -93,3 +93,21 @@ merge: {
   }
 }
 ```
+
+### Developing
+
+There isn't much special, you just need cue installed.
+
+#### Running tests
+
+See the [test directory](./test)
+for more specifics and examples.
+
+```
+cue test
+```
+
+This runs the test command in test_tool.cue
+which is nothing more than "cue export test/*.cue"
+
+
