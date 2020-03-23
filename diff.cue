@@ -4,7 +4,7 @@ import "encoding/json"
 
 import "list"
 
-Diff :: DiffInfo
+Diff :: DiffDeep
 
 DiffInfo :: {
 	Orig: _
@@ -27,7 +27,7 @@ DiffInfo :: {
 				}
 				if (New[k] & Builtin) == _|_ {
 					NewV = New[k]
-					"\(k)": (Diff & {Orig: v, New: NewV}).Result
+					"\(k)": (DiffInfo & {Orig: v, New: NewV}).Result
 				}
 			}
 		}
