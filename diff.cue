@@ -4,47 +4,7 @@ import "encoding/json"
 
 import "list"
 
-Diff :: DiffDeep
-
-DiffInfo :: {
-	Orig: _
-	New:  _
-	Result: {
-		for k, v in Orig {
-			if (New[k] & Orig[k]) == _|_ {
-				if ((New[k] & Builtin) != _|_) {
-					"\(k)": "value-changed"
-				}
-				if ((New[k] & Builtin) == _|_) {
-					"\(k)": "key-removed"
-				}
-			}
-			if (New[k] & Orig[k]) != _|_ {
-				if ((New[k] & Builtin) != _|_) {
-					if New[k] != Orig[k] {
-						"\(k)": "value-changed"
-					}
-				}
-				if (New[k] & Builtin) == _|_ {
-					NewV = New[k]
-					"\(k)": (DiffInfo & {Orig: v, New: NewV}).Result
-				}
-			}
-		}
-		for k, v in New {
-			if (Orig[k] & New[k]) == _|_ {
-				if ((Orig[k] & Builtin) != _|_) {
-					"\(k)": "value-changed"
-				}
-				if ((Orig[k] & Builtin) == _|_) {
-					"\(k)": "key-added"
-				}
-			}
-		}
-	}
-}
-
-DiffDeep :: {
+Diff :: {
 	Orig: _
 	New:  _
 	Path: [...]
@@ -81,7 +41,7 @@ DiffDeep :: {
 							if (Orig[k] & Struct) != _|_ {
 								NewV = New[k]
 								NewP = Path
-								(DiffDeep & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
 							}
 							if (Orig[k] & Struct) == _|_ {
 								"\(json.Marshal(Path))": changed: {
@@ -94,7 +54,7 @@ DiffDeep :: {
 							if (Orig[k] & List) != _|_ {
 								NewV = New[k]
 								NewP = Path
-								(DiffDeep & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
 							}
 							if (Orig[k] & List) == _|_ {
 								"\(json.Marshal(Path))": changed: {
