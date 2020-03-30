@@ -13,7 +13,7 @@ DiffCases :: {
 	case1: {
 		ex: (structural.Diff & {Orig: A, New: B}).Result
 		an: {
-			"[]": {
+			"": {
 				removed: {
 					a: "a"
 				}
@@ -21,7 +21,7 @@ DiffCases :: {
 					c: "c"
 				}
 			}
-			"[\"N\"]": {
+			"N": {
 				removed: {
 					y: "y"
 				}
@@ -34,7 +34,7 @@ DiffCases :: {
 	case2: {
 		ex: (structural.Diff & {Orig: B, New: A}).Result
 		an: {
-			"[]": {
+			"": {
 				removed: {
 					c: "c"
 				}
@@ -42,7 +42,7 @@ DiffCases :: {
 					a: "a"
 				}
 			}
-			"[\"N\"]": {
+			"N": {
 				removed: {
 					z: "z"
 				}
@@ -55,7 +55,7 @@ DiffCases :: {
 	case3: {
 		ex: (structural.Diff & {Orig: A, New: C}).Result
 		an: {
-			"[]": {
+			"": {
 				removed: {
 					a: "a"
 					N: {
@@ -72,7 +72,7 @@ DiffCases :: {
 	case4: {
 		ex: (structural.Diff & {Orig: C, New: A}).Result
 		an: {
-			"[]": {
+			"": {
 				removed: {
 					c: "c"
 				}
@@ -89,7 +89,7 @@ DiffCases :: {
 	case5: {
 		ex: (structural.Diff & {Orig: B, New: C}).Result
 		an: {
-			"[]": {
+			"": {
 				removed: {
 					N: {
 						x: "x"
@@ -102,11 +102,27 @@ DiffCases :: {
 	case6: {
 		ex: (structural.Diff & {Orig: C, New: B}).Result
 		an: {
-			"[]": {
+			"": {
 				added: {
 					N: {
 						x: "x"
 						z: "z"
+					}
+				}
+			}
+		}
+	}
+	case7: {
+		ex: (structural.Diff & {Orig: A, New: Z}).Result
+		an: {
+			"": {
+				changed: {
+					N: {
+						from: {
+							x: "x"
+							y: "y"
+						}
+						to: "N"
 					}
 				}
 			}
