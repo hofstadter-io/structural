@@ -26,6 +26,16 @@ MaskCases :: {
 			l: [2, 4, 5]
 		}
 	}
+	case3: {
+		ex: (structural.Mask & {Orig: X, Mask: { b: string, N: {x: string}, l: <3 }}).Result
+		an: {
+			a: "a"
+			N: {
+				y: "y"
+			}
+			l: [3, 4, 5]
+		}
+	}
 }
 
 X:: {

@@ -25,6 +25,16 @@ PickCases :: {
 			l: [1, 3]
 		}
 	}
+	case3: {
+		ex: (structural.Pick & {Orig: X, Pick: { b: string, N: {x: string}, l: <3 }}).Result
+		an: {
+			b: "b"
+			N: {
+				x: "x"
+			}
+			l: [1, 2]
+		}
+	}
 }
 
 X:: {
