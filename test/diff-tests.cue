@@ -20,7 +20,7 @@ DiffCases :: {
 				c: "c"
 			}
 			inplace: {
-				"N": {
+				N: {
 					removed: {
 						y: "y"
 					}
@@ -41,7 +41,7 @@ DiffCases :: {
 				a: "a"
 			}
 			inplace: {
-				"N": {
+				N: {
 					removed: {
 						z: "z"
 					}

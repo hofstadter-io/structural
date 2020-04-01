@@ -1,15 +1,11 @@
 package structural
 
-import "list"
-
 Diff :: {
 	// Arguments
 	Orig: _
 	New:  _
 
 	// Internal fields
-	// Make sure path is a list, these are components to the object tree path
-	Path: [...]
 	// Make sure result is open
 	Result: {...}
 	Result: {
@@ -63,9 +59,8 @@ Diff :: {
 							// If they are the same type, recurse
 							if (Orig[k] & Struct) != _|_ {
 								NewV = New[k]
-								NewP = Path
 								inplace: {
-									"\(k)": (Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+									"\(k)": (Diff & {Orig: v, New: NewV}).Result
 								}
 							}
 
@@ -83,9 +78,8 @@ Diff :: {
 							// If they are the same type, recurse
 							if (Orig[k] & List) != _|_ {
 								NewV = New[k]
-								NewP = Path
 								inplace: {
-									"\(k)": (Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+									"\(k)": (Diff & {Orig: v, New: NewV}).Result
 								}
 							}
 
