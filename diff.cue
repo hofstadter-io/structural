@@ -1,7 +1,6 @@
 package structural
 
 import "list"
-import "strings"
 
 Diff :: {
 	// Arguments
@@ -16,13 +15,10 @@ Diff :: {
 	Result: {
 		// Loop over keys
 		for k, v in Orig {
-			// create on open struct for the result
-			"\(strings.Join(Path, "."))": {...}
-
 			// If key is not in new
 			if New[k] == _|_ {
 				// report the remove key and value
-				"\(strings.Join(Path, "."))": removed: {
+				removed: {
 					"\(k)": Orig[k]
 					...
 				}
@@ -39,7 +35,7 @@ Diff :: {
 						// we can compare
 						if New[k] != Orig[k] {
 							// and report if changed
-							"\(strings.Join(Path, "."))": changed: {
+							changed: {
 								"\(k)": {from: Orig[k], to: New[k]}
 								...
 							}
@@ -50,7 +46,7 @@ Diff :: {
 					if (Orig[k] & Builtin) == _|_ {
 
 						// report the key as changed
-						"\(strings.Join(Path, "."))": changed: {
+						changed: {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
@@ -68,12 +64,14 @@ Diff :: {
 							if (Orig[k] & Struct) != _|_ {
 								NewV = New[k]
 								NewP = Path
-								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								inplace: {
+									"\(k)": (Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								}
 							}
 
 							// If they are different types, report
 							if (Orig[k] & Struct) == _|_ {
-								"\(strings.Join(Path, "."))": changed: {
+								changed: {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
@@ -86,12 +84,14 @@ Diff :: {
 							if (Orig[k] & List) != _|_ {
 								NewV = New[k]
 								NewP = Path
-								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								inplace: {
+									"\(k)": (Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								}
 							}
 
 							// If they are different types, report
 							if (Orig[k] & List) == _|_ {
-								"\(strings.Join(Path, "."))": changed: {
+								changed: {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
@@ -102,7 +102,7 @@ Diff :: {
 					// "Else" the orig is a builtin, but new is not, again differing types for this key
 					if (Orig[k] & Builtin) != _|_ {
 						// report the key as changed
-						"\(strings.Join(Path, "."))": changed: {
+						changed: {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
@@ -115,7 +115,7 @@ Diff :: {
 		for k, v in New {
 			if Orig[k] == _|_ {
 				// report added key and value
-				"\(strings.Join(Path, "."))": added: {
+				added: {
 					"\(k)": New[k]
 					...
 				}
