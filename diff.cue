@@ -1,6 +1,7 @@
 package structural
 
-Diff :: {
+// With '::' was getting weird bugs, so making ':' until can figure out what's wrong
+Diff : {
 	// Arguments
 	Orig: _
 	New:  _
