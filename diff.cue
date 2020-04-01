@@ -1,29 +1,21 @@
 package structural
 
-import "encoding/json"
-
-import "list"
-
-Diff :: {
+// With '::' was getting weird bugs, so making ':' until can figure out what's wrong
+Diff : {
 	// Arguments
 	Orig: _
 	New:  _
 
 	// Internal fields
-	// Make sure path is a list, these are components to the object tree path
-	Path: [...]
 	// Make sure result is open
 	Result: {...}
 	Result: {
 		// Loop over keys
 		for k, v in Orig {
-			// create on open struct for te result
-			"\(json.Marshal(Path))": {...}
-
 			// If key is not in new
 			if New[k] == _|_ {
 				// report the remove key and value
-				"\(json.Marshal(Path))": removed: {
+				removed: {
 					"\(k)": Orig[k]
 					...
 				}
@@ -40,7 +32,7 @@ Diff :: {
 						// we can compare
 						if New[k] != Orig[k] {
 							// and report if changed
-							"\(json.Marshal(Path))": changed: {
+							changed: {
 								"\(k)": {from: Orig[k], to: New[k]}
 								...
 							}
@@ -51,7 +43,7 @@ Diff :: {
 					if (Orig[k] & Builtin) == _|_ {
 
 						// report the key as changed
-						"\(json.Marshal(Path))": changed: {
+						changed: {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
@@ -68,13 +60,14 @@ Diff :: {
 							// If they are the same type, recurse
 							if (Orig[k] & Struct) != _|_ {
 								NewV = New[k]
-								NewP = Path
-								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								inplace: {
+									"\(k)": (Diff & {Orig: v, New: NewV}).Result
+								}
 							}
 
 							// If they are different types, report
 							if (Orig[k] & Struct) == _|_ {
-								"\(json.Marshal(Path))": changed: {
+								changed: {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
@@ -86,13 +79,14 @@ Diff :: {
 							// If they are the same type, recurse
 							if (Orig[k] & List) != _|_ {
 								NewV = New[k]
-								NewP = Path
-								(Diff & {Orig: v, New: NewV, Path: list.FlattenN([NewP, k], 1)}).Result
+								inplace: {
+									"\(k)": (Diff & {Orig: v, New: NewV}).Result
+								}
 							}
 
 							// If they are different types, report
 							if (Orig[k] & List) == _|_ {
-								"\(json.Marshal(Path))": changed: {
+								changed: {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
@@ -103,7 +97,7 @@ Diff :: {
 					// "Else" the orig is a builtin, but new is not, again differing types for this key
 					if (Orig[k] & Builtin) != _|_ {
 						// report the key as changed
-						"\(json.Marshal(Path))": changed: {
+						changed: {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
@@ -116,7 +110,7 @@ Diff :: {
 		for k, v in New {
 			if Orig[k] == _|_ {
 				// report added key and value
-				"\(json.Marshal(Path))": added: {
+				added: {
 					"\(k)": New[k]
 					...
 				}

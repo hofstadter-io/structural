@@ -13,20 +13,20 @@ DiffCases :: {
 	case1: {
 		ex: (structural.Diff & {Orig: A, New: B}).Result
 		an: {
-			"[]": {
-				removed: {
-					a: "a"
-				}
-				added: {
-					c: "c"
-				}
+			removed: {
+				a: "a"
 			}
-			"[\"N\"]": {
-				removed: {
-					y: "y"
-				}
-				added: {
-					z: "z"
+			added: {
+				c: "c"
+			}
+			inplace: {
+				N: {
+					removed: {
+						y: "y"
+					}
+					added: {
+						z: "z"
+					}
 				}
 			}
 		}
@@ -34,20 +34,20 @@ DiffCases :: {
 	case2: {
 		ex: (structural.Diff & {Orig: B, New: A}).Result
 		an: {
-			"[]": {
-				removed: {
-					c: "c"
-				}
-				added: {
-					a: "a"
-				}
+			removed: {
+				c: "c"
 			}
-			"[\"N\"]": {
-				removed: {
-					z: "z"
-				}
-				added: {
-					y: "y"
+			added: {
+				a: "a"
+			}
+			inplace: {
+				N: {
+					removed: {
+						z: "z"
+					}
+					added: {
+						y: "y"
+					}
 				}
 			}
 		}
@@ -55,33 +55,29 @@ DiffCases :: {
 	case3: {
 		ex: (structural.Diff & {Orig: A, New: C}).Result
 		an: {
-			"[]": {
-				removed: {
-					a: "a"
-					N: {
-						x: "x"
-						y: "y"
-					}
+			removed: {
+				a: "a"
+				N: {
+					x: "x"
+					y: "y"
 				}
-				added: {
-					c: "c"
-				}
+			}
+			added: {
+				c: "c"
 			}
 		}
 	}
 	case4: {
 		ex: (structural.Diff & {Orig: C, New: A}).Result
 		an: {
-			"[]": {
-				removed: {
-					c: "c"
-				}
-				added: {
-					a: "a"
-					N: {
-						x: "x"
-						y: "y"
-					}
+			removed: {
+				c: "c"
+			}
+			added: {
+				a: "a"
+				N: {
+					x: "x"
+					y: "y"
 				}
 			}
 		}
@@ -89,12 +85,10 @@ DiffCases :: {
 	case5: {
 		ex: (structural.Diff & {Orig: B, New: C}).Result
 		an: {
-			"[]": {
-				removed: {
-					N: {
-						x: "x"
-						z: "z"
-					}
+			removed: {
+				N: {
+					x: "x"
+					z: "z"
 				}
 			}
 		}
@@ -102,12 +96,24 @@ DiffCases :: {
 	case6: {
 		ex: (structural.Diff & {Orig: C, New: B}).Result
 		an: {
-			"[]": {
-				added: {
-					N: {
+			added: {
+				N: {
+					x: "x"
+					z: "z"
+				}
+			}
+		}
+	}
+	case7: {
+		ex: (structural.Diff & {Orig: A, New: Z}).Result
+		an: {
+			changed: {
+				N: {
+					from: {
 						x: "x"
-						z: "z"
+						y: "y"
 					}
+					to: "N"
 				}
 			}
 		}
