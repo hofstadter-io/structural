@@ -10,6 +10,9 @@ import (
 merge: (cuetest.Table & {TestCases: MergeCases}).Results
 
 MergeCases :: {
+	_mergecases
+}
+_mergecases : {
 	case1: {
 		ex: (structural.Merge & {Orig: A, New: B}).Result
 		an: {
