@@ -1,6 +1,6 @@
 package structural
 
-pickrec: { orig: _, pick: _, result: (Pick & { Orig: orig, Pick: pick }).Result }
+pickrec :: { orig: _, pick: _, result: (Pick & { Orig: orig, Pick: pick }).Result }
 Pick :: {
   Orig: _
   Pick: _
