@@ -1,6 +1,6 @@
 package structural
 
-maskrec: { orig: _, mask: _, result: (Mask & { Orig: orig, Mask: mask }).Result }
+maskrec :: { orig: _, mask: _, result: (Mask & { Orig: orig, Mask: mask }).Result }
 Mask :: {
   Orig: _
   Mask: _
