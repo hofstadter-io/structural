@@ -23,4 +23,14 @@ MergeCases :: {
 			}
 		}
 	}
+	case2: {
+		ex: (structural.Merge & {Orig: {a: {b: {c: {z: "z"}}}}, New: {a: {b: {c: {y: "y"}}}}}).Result
+		an: {a: {b: {c: {z: "z", y: "y"}}}}
+	}
+	case3: {
+		ex: d
+		an: {a: {b: {c: {z: "z", y: "y"}}}}
+	}
 }
+
+d: (structural.Merge & {Orig: {a: {b: {c: {z: "z"}}}}, New: {a: {b: {c: {y: "y"}}}}}).Result
