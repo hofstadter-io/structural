@@ -1,7 +1,7 @@
 package structural
 
 // With '::' was getting weird bugs, so making ':' until can figure out what's wrong
-Diff : {
+Diff :: {
 	// Arguments
 	Orig: _
 	New:  _
@@ -34,7 +34,6 @@ Diff : {
 							// and report if changed
 							changed: {
 								"\(k)": {from: Orig[k], to: New[k]}
-								...
 							}
 						}
 					}
@@ -47,6 +46,7 @@ Diff : {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
+						...
 					}
 				}
 
@@ -62,7 +62,9 @@ Diff : {
 								NewV = New[k]
 								inplace: {
 									"\(k)": (Diff & {Orig: v, New: NewV}).Result
+									...
 								}
+								...
 							}
 
 							// If they are different types, report
@@ -71,6 +73,7 @@ Diff : {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
+								...
 							}
 						}
 
@@ -81,7 +84,9 @@ Diff : {
 								NewV = New[k]
 								inplace: {
 									"\(k)": (Diff & {Orig: v, New: NewV}).Result
+									...
 								}
+								...
 							}
 
 							// If they are different types, report
@@ -90,6 +95,7 @@ Diff : {
 									"\(k)": {from: Orig[k], to: New[k]}
 									...
 								}
+								...
 							}
 						}
 					}
@@ -101,6 +107,7 @@ Diff : {
 							"\(k)": {from: Orig[k], to: New[k]}
 							...
 						}
+						...
 					}
 				}
 			}
