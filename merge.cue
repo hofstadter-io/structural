@@ -3,37 +3,32 @@ package structural
 Merge :: {
 	Orig: _
 	New:  _
+	Result: {...}
 	Result: {
 
 		// Loop over keys in orig
 		for k, v in Orig {
-
-			// If they not are the same value, so overwrite
-			if (New[k] & Orig[k]) == _|_ {
-
-        // The key is missing in new, so add
-        if New[k] == _|_ {
-          "\(k)": Orig[k]
-        }
-        // The key is present in new, so overwrite
-        if New[k] != _|_ {
-          "\(k)": New[k]
-        }
+			if New[k] == _|_ {
+				// The key is missing in new, so add
+				"\(k)": Orig[k]
 			}
-
-			// "Else" if they are the same type
-			if (New[k] & Orig[k]) != _|_ {
-
-				// check if values are builtins
-				if ((New[k] & Builtin) != _|_) {
-					// since builtins, we don't need to compare, take the new value always
-          "\(k)": New[k]
+			if New[k] != _|_ {
+				// If different type, fail
+				if (Orig[k] & Builtin) != _|_ && (New[k] & Builtin) == _|_ {
+					"bad merge": _|_
 				}
-
-				// The values are not builtin, so recurse
-				if (New[k] & Builtin) == _|_ {
-					NewV = New[k]
-					"\(k)": (Merge & {Orig: v, New: NewV}).Result
+				if (Orig[k] & Struct) != _|_ && (New[k] & Struct) == _|_ {
+					"bad merge": _|_
+				}
+				// Always use new for builtins
+				if (Orig[k] & Builtin) != _|_ {
+					"\(k)": New[k]
+				}
+				// Recurse for structs
+				if (Orig[k] & Struct) != _|_ {
+					_orig = Orig[k]
+					_new = New[k]
+					"\(k)": (Merge & {Orig: _orig, New: _new}).Result
 				}
 			}
 		}
@@ -47,13 +42,3 @@ Merge :: {
 		}
 	}
 }
-
-a: {
-	foo: "a"
-}
-
-b: {
-	goo: "b"
-}
-
-c: (Merge & {Orig: a, New: b}).Result
