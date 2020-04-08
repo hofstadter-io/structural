@@ -1,35 +1,49 @@
 # structural
 
-Structural diff, merge, patch helpers for CUE
-
-You will need at least https://cuelang.org installed.
+Structural
+[diff](#Diff),
+[merge](#Merge),
+[patch](#Patch),
+[pick](#Pick),
+and
+[mask](#Mask) helpers for [CUE](https://cuelang.org).
 
 [MVS will make using cue modules easier.](https://github.com/hofstadter-io/mvs)
 
-### Usage
+## Index
+
+1. [Usage](#Usage)
+1. [diff](#Diff)
+1. [merge](#Merge)
+1. [patch](#Patch)
+1. [pick](#Pick)
+1. [mask](#Mask)
+1. [Developing](#Developing)
+
+## Usage
 
 `structural` is most easily used with cue modules,
 see https://github.com/hofstadter-io/mvs.
 
-#### Initialize a cue module
+### Initialize a cue module
 
 ```
 mvs init cue github.com/<namespace>/<project>
 ```
 
-#### Add `structural` to your `cue.mods` file:
+### Add `structural` to your `cue.mods` file:
 
 ```
-require github.com/hofstadter-io/structural v0.0.2
+require github.com/hofstadter-io/structural v0.0.3
 ```
 
-#### Update your dependencies:
+### Update your dependencies:
 
 ```
 mvs vendor
 ```
 
-#### After creating `example.cue` run the following:
+### After creating `example.cue` (see below) run the following:
 
 ```
 cue eval example.cue
@@ -39,7 +53,7 @@ cue export example.cue
 Look for a "same" field == true
 
 
-#### example.cue
+### example.cue
 
 ```
 import "github.com/hofstadter-io/structural"
@@ -94,20 +108,77 @@ merge: {
 }
 ```
 
-### Developing
+## Diff
+
+```
+Diff :: {
+	// Arguments
+	Orig: {...}
+	New:  {...}
+
+	Result: {...}
+}
+```
+
+## Merge
+
+```
+Merge :: {
+	// Arguments
+	Orig: {...}
+	New:  {...}
+
+	Result: {...}
+```
+
+## Patch
+
+```
+Patch :: {
+	// Arguments
+	Orig: {...}
+	Diff: {...}
+
+	Result: {...}
+}
+```
+
+## Pick
+
+```
+Pick :: {
+	// Arguments
+  Orig: {...}
+  Pick: {...}
+
+  Result: {...}
+}
+```
+
+## Mask
+
+```
+Mask :: {
+	// Arguments
+  Orig: {...}
+  Mask: {...}
+
+  Result: {...}
+}
+```
+
+## Developing
 
 There isn't much special, you just need cue installed.
 
-#### Running tests
-
-See the [test directory](./test)
-for more specifics and examples.
+### Running tests
 
 ```
 cue test
 ```
 
-This runs the test command in test_tool.cue
+See the [test directory](./test)
+for more specifics and examples.
+
+This runs the test command in `test_tool.cue`
 which is nothing more than "cue export test/*.cue"
-
-
