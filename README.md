@@ -120,6 +120,31 @@ Diff :: {
 }
 ```
 
+```
+A :: {
+	a: "a"
+	b: "b"
+	N: {x: "x", y: "y"}
+}
+Z :: {
+	a: "a"
+	b: "b"
+	N: "N"
+}
+x: (structural.Diff & {Orig: A, New: Z}).Result
+x: {
+	changed: {
+	  N: {
+	    from: {
+	      x: "x"
+	      y: "y"
+	    }
+	    to: "N"
+	  }
+	}
+}
+```
+
 ## Merge
 
 ```
@@ -129,6 +154,30 @@ Merge :: {
 	New:  {...}
 
 	Result: {...}
+```
+
+```
+A :: {
+	a: "a"
+	b: "b"
+	N: {x: "x", y: "y"}
+}
+B :: {
+	b: "b"
+	c: "c"
+	N: {x: "x", z: "z"}
+}
+x: (structural.Merge & {Orig: A, New: B}).Result
+x: {
+  a: "a"
+  b: "b"
+  c: "c"
+  N: {
+    x: "x"
+    y: "y"
+    z: "z"
+  }
+}
 ```
 
 ## Patch
@@ -143,6 +192,12 @@ Patch :: {
 }
 ```
 
+```
+x: (structural.Patch & {Orig: {a: "a", b: "b", y: "y", N: {x: "x"}},
+												 Diff: {inplace: {N: {changed: {x: {from: "x", to: "xx"}}}}, changed: {y: {from: "y", to: "yy"}}, removed: {b: "b"}, added: {z: "z"}}}).Result
+x: {a: "a", y: "yy", N: {x: "xx"}, z: "z"}
+```
+
 ## Pick
 
 ```
@@ -155,6 +210,23 @@ Pick :: {
 }
 ```
 
+```
+X:: {
+	a: "a"
+	b: "b"
+	N: {x: "x", y: "y"}
+	l: [1, 2, 3, 4, 5]
+}
+x: (structural.Pick & {Orig: X, Pick: { b: string, N: {x: string}, l: [1, 1, 3] }}).Result
+x: {
+  b: "b"
+  N: {
+    x: "x"
+  }
+  l: [1, 3]
+}
+```
+
 ## Mask
 
 ```
@@ -164,6 +236,23 @@ Mask :: {
   Mask: {...}
 
   Result: {...}
+}
+```
+
+```
+X:: {
+	a: "a"
+	b: "b"
+	N: {x: "x", y: "y"}
+	l: [1, 2, 3, 4, 5]
+}
+x: (structural.Mask & {Orig: X, Mask: { b: string, N: {x: string}, l: [1, 1, 3] }}).Result
+x: {
+	a: "a"
+	N: {
+		y: "y"
+	}
+	l: [2, 4, 5]
 }
 ```
 
