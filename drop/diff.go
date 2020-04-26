@@ -1,43 +1,9 @@
-package structural
+package drop
 
 import (
 	"fmt"
 	"reflect"
-
-	"cuelang.org/go/cue"
 )
-
-// TODO, diff3 objects
-// TODO, flat vs nested for [diff,merge,patch]
-// TODO, converstion between flat and nested
-
-func Diff(theirs, ours interface{}) (interface{}, error) {
-
-	T, tok := theirs.(cue.Value)
-	O, ook := ours.(cue.Value)
-
-	if tok && ook {
-		return DiffCue(T, O)
-	}
-
-	if !(tok || ook) {
-		return DiffGo(theirs, ours)
-	}
-
-	// TODO, do a conversion to cue, return the original format (go/cue)
-
-	return nil, fmt.Errorf("structural.Diff - Incompatible types %v and %v", reflect.TypeOf(theirs), reflect.TypeOf(ours))
-}
-
-func DiffCue(theirs, ours cue.Value) (cue.Value, error) {
-	fmt.Println("DiffCue - no implemented")
-	return cue.Value{}, nil
-}
-
-func DiffGo(theirs, ours interface{}) (interface{}, error) {
-	fmt.Println("DiffGo - no implemented")
-	return nil, nil
-}
 
 type DiffOp struct {
 	Op        string
@@ -569,3 +535,4 @@ func diffSlicesMaps(orig, curr []interface{}, basepath string) []DiffOp {
 
 	return diffs
 }
+
