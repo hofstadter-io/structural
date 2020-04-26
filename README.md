@@ -12,13 +12,16 @@ and
 
 ## Index
 
+support for both Cue and Go vals/structs
+
 1. [Usage](#Usage)
-1. [diff](#Diff)
-1. [merge](#Merge)
-1. [patch](#Patch)
-1. [pick](#Pick)
-1. [mask](#Mask)
-1. [Developing](#Developing)
+2. equal
+3. [diff](#Diff)
+4. [merge](#Merge)
+5. [patch](#Patch)
+6. [pick](#Pick)
+7. [mask](#Mask)
+8. [Developing](#Developing)
 
 ## Usage
 
