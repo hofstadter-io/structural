@@ -1,0 +1,8 @@
+FROM debian:jessie
+MAINTAINER Hofstadter, Inc <open-source@hofstadter.io>
+
+COPY st /usr/bin/local
+ENTRYPOINT ["st"]
+
+VOLUME ["/work"]
+WORKDIR /work
