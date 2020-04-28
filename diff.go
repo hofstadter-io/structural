@@ -150,45 +150,43 @@ func reportAdded(out *ast.StructLit, key string, val cue.Value) {
 	}
 }
 
-func CueDiff(sorig, snew string) error {
+func CueDiff(sorig, snew string) (string, error) {
 	var r cue.Runtime
 	out := ast.NewStruct()
 
 	vorigi, err := r.Compile("", sorig)
 	if err != nil {
-		return err
+		return "", err
 	}
 	vorig := vorigi.Value()
 	if vorig.Err() != nil {
-		return vorig.Err()
+		return "", vorig.Err()
 	}
 	vnewi, err := r.Compile("", snew)
 	if err != nil {
-		return err
+		return "", err
 	}
 	vnew := vnewi.Value()
 	if vnew.Err() != nil {
-		return vnew.Err()
+		return "", vnew.Err()
 	}
 
 	err = cueDiff(out, vorig, vnew)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	i, err := r.CompileExpr(out)
 	if err != nil {
-		return err
+		return "", err
 	}
 	v := i.Value()
 
 	bytes, err := format.Node(v.Syntax())
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(strings.TrimSpace(string(bytes)))
-
-	return nil
+	return strings.TrimSpace(string(bytes)), nil
 }
 
 func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {

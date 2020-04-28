@@ -12,7 +12,11 @@ var diffLong = `diff two Cue values to create a diffset`
 
 func DiffRun(args []string) (err error) {
 
-	return structural.CueDiff(args[0], args[1])
+	s, err := structural.CueDiff(args[0], args[1])
+	if err == nil {
+		fmt.Println(s)
+	}
+	return err
 }
 
 var DiffCmd = &cobra.Command{
