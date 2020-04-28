@@ -11,6 +11,11 @@ import (
 	"cuelang.org/go/cue/parser"
 )
 
+func isStruct(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.StructKind
+}
+
 func isList(val cue.Value) bool {
 	k := val.Kind()
 	return k == cue.ListKind
@@ -24,6 +29,27 @@ func isBuiltin(val cue.Value) bool {
 		k == cue.FloatKind ||
 		k == cue.StringKind ||
 		k == cue.BytesKind
+}
+
+func reportInplace(out *ast.StructLit, key string, val *ast.StructLit) {
+	found := false
+	for _, d := range out.Elts {
+		df := d.(*ast.Field)
+		label, _, _ := ast.LabelName(df.Label)
+		if label == "inplace" {
+			sl := df.Value.(*ast.StructLit)
+			sl.Elts = append(sl.Elts,
+				&ast.Field{Label: ast.NewIdent(key), Value: val})
+			found = true
+			break
+		}
+	}
+	if !found {
+		out.Elts = append(out.Elts,
+			&ast.Field{Label: ast.NewIdent("inplace"),
+				Value: ast.NewStruct(
+					&ast.Field{Label: ast.NewIdent(key), Value: val})})
+	}
 }
 
 func reportChanged(out *ast.StructLit, key string, oldval, newval cue.Value) {
@@ -145,6 +171,27 @@ func CueDiff(sorig, snew string) error {
 		return vnew.Err()
 	}
 
+	err = cueDiff(out, vorig, vnew)
+	if err != nil {
+		return err
+	}
+
+	i, err := r.CompileExpr(out)
+	if err != nil {
+		return err
+	}
+	v := i.Value()
+
+	bytes, err := format.Node(v.Syntax())
+	if err != nil {
+		return err
+	}
+	fmt.Println(strings.TrimSpace(string(bytes)))
+
+	return nil
+}
+
+func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {
 	// Loop over keys in orig
 	vorigStruct, err := vorig.Struct()
 	if err != nil {
@@ -176,7 +223,16 @@ func CueDiff(sorig, snew string) error {
 			continue
 		}
 		// Both must be structs, so recurse
-		// TODO
+		if !isStruct(origVal) || !isStruct(newVal.Value) {
+			panic("should not reach")
+		}
+		rval := ast.NewStruct()
+		err = cueDiff(rval, origVal, newVal.Value)
+		if err != nil {
+			return err
+		}
+		reportInplace(out, vorigIter.Label(), rval)
+		// out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent(vorigIter.Label()), Value: rval})
 	}
 
 	// Loop over keys in new
@@ -192,18 +248,6 @@ func CueDiff(sorig, snew string) error {
 			reportAdded(out, vnewIter.Label(), vnewIter.Value())
 		}
 	}
-
-	i, err := r.CompileExpr(out)
-	if err != nil {
-		return err
-	}
-	v := i.Value()
-
-	bytes, err := format.Node(v.Syntax())
-	if err != nil {
-		return err
-	}
-	fmt.Println(strings.TrimSpace(string(bytes)))
 
 	return nil
 }
