@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hofstadter-io/structural"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +12,7 @@ var diffLong = `diff two Cue values to create a diffset`
 
 func DiffRun(args []string) (err error) {
 
-	return err
+	return structural.CueDiff(args[0], args[1])
 }
 
 var DiffCmd = &cobra.Command{
@@ -26,6 +27,10 @@ var DiffCmd = &cobra.Command{
 		var err error
 
 		// Argument Parsing
+		if len(args) != 2 {
+			fmt.Println("usage: st diff old new")
+			return
+		}
 
 		err = DiffRun(args)
 		if err != nil {
