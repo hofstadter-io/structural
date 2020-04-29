@@ -3,9 +3,252 @@ package structural
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/cue/format"
+	"cuelang.org/go/cue/parser"
 )
+
+func isStruct(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.StructKind
+}
+
+func isList(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.ListKind
+}
+
+func isBuiltin(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.NullKind ||
+		k == cue.BoolKind ||
+		k == cue.IntKind ||
+		k == cue.FloatKind ||
+		k == cue.StringKind ||
+		k == cue.BytesKind
+}
+
+func reportInplace(out *ast.StructLit, key string, val *ast.StructLit) {
+	found := false
+	for _, d := range out.Elts {
+		df := d.(*ast.Field)
+		label, _, _ := ast.LabelName(df.Label)
+		if label == "inplace" {
+			sl := df.Value.(*ast.StructLit)
+			sl.Elts = append(sl.Elts,
+				&ast.Field{Label: ast.NewIdent(key), Value: val})
+			found = true
+			break
+		}
+	}
+	if !found {
+		out.Elts = append(out.Elts,
+			&ast.Field{Label: ast.NewIdent("inplace"),
+				Value: ast.NewStruct(
+					&ast.Field{Label: ast.NewIdent(key), Value: val})})
+	}
+}
+
+func reportChanged(out *ast.StructLit, key string, oldval, newval cue.Value) {
+	bytes, err := format.Node(oldval.Syntax())
+	if err != nil {
+		panic(err)
+	}
+	oldexpr, err := parser.ParseExpr("", bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	bytes, err = format.Node(newval.Syntax())
+	if err != nil {
+		panic(err)
+	}
+	newexpr, err := parser.ParseExpr("", bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	found := false
+	for _, d := range out.Elts {
+		df := d.(*ast.Field)
+		label, _, _ := ast.LabelName(df.Label)
+		if label == "changed" {
+			sl := df.Value.(*ast.StructLit)
+			sl.Elts = append(sl.Elts,
+				&ast.Field{Label: ast.NewIdent(key), Value: ast.NewStruct(
+					&ast.Field{Label: ast.NewIdent("from"), Value: oldexpr},
+					&ast.Field{Label: ast.NewIdent("to"), Value: newexpr},
+				)})
+			found = true
+			break
+		}
+	}
+	if !found {
+		out.Elts = append(out.Elts,
+			&ast.Field{Label: ast.NewIdent("changed"),
+				Value: ast.NewStruct(
+					&ast.Field{Label: ast.NewIdent(key),
+						Value: ast.NewStruct(
+							&ast.Field{Label: ast.NewIdent("from"), Value: oldexpr},
+							&ast.Field{Label: ast.NewIdent("to"), Value: newexpr},
+						)})})
+	}
+}
+
+func reportRemoved(out *ast.StructLit, key string, val cue.Value) {
+	bytes, err := format.Node(val.Syntax())
+	if err != nil {
+		panic(err)
+	}
+	expr, err := parser.ParseExpr("", bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	found := false
+	for _, d := range out.Elts {
+		df := d.(*ast.Field)
+		label, _, _ := ast.LabelName(df.Label)
+		if label == "removed" {
+			sl := df.Value.(*ast.StructLit)
+			sl.Elts = append(sl.Elts, &ast.Field{Label: ast.NewIdent(key), Value: expr})
+			found = true
+			break
+		}
+	}
+	if !found {
+		out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent("removed"), Value: ast.NewStruct(&ast.Field{Label: ast.NewIdent(key), Value: expr})})
+	}
+}
+
+func reportAdded(out *ast.StructLit, key string, val cue.Value) {
+	bytes, err := format.Node(val.Syntax())
+	if err != nil {
+		panic(err)
+	}
+	expr, err := parser.ParseExpr("", bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	found := false
+	for _, d := range out.Elts {
+		df := d.(*ast.Field)
+		label, _, _ := ast.LabelName(df.Label)
+		if label == "added" {
+			sl := df.Value.(*ast.StructLit)
+			sl.Elts = append(sl.Elts, &ast.Field{Label: ast.NewIdent(key), Value: expr})
+			found = true
+			break
+		}
+	}
+	if !found {
+		out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent("added"), Value: ast.NewStruct(&ast.Field{Label: ast.NewIdent(key), Value: expr})})
+	}
+}
+
+func CueDiff(sorig, snew string) (string, error) {
+	var r cue.Runtime
+	out := ast.NewStruct()
+
+	vorigi, err := r.Compile("", sorig)
+	if err != nil {
+		return "", err
+	}
+	vorig := vorigi.Value()
+	if vorig.Err() != nil {
+		return "", vorig.Err()
+	}
+	vnewi, err := r.Compile("", snew)
+	if err != nil {
+		return "", err
+	}
+	vnew := vnewi.Value()
+	if vnew.Err() != nil {
+		return "", vnew.Err()
+	}
+
+	err = cueDiff(out, vorig, vnew)
+	if err != nil {
+		return "", err
+	}
+
+	i, err := r.CompileExpr(out)
+	if err != nil {
+		return "", err
+	}
+	v := i.Value()
+
+	bytes, err := format.Node(v.Syntax())
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bytes)), nil
+}
+
+func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {
+	// Loop over keys in orig
+	vorigStruct, err := vorig.Struct()
+	if err != nil {
+		return err
+	}
+	vorigIter := vorigStruct.Fields()
+	for vorigIter.Next() {
+		origVal := vorigIter.Value()
+		// Report removed if doesn't exist in new
+		newVal, err := vnew.LookupField(vorigIter.Label())
+		if err != nil {
+			reportRemoved(out, vorigIter.Label(), origVal)
+			continue
+		}
+		// If at least one is a builtin or list, then compare
+		if isBuiltin(origVal) || isBuiltin(newVal.Value) {
+			if origVal.Unify(newVal.Value).Kind() == cue.BottomKind {
+				reportChanged(out, vorigIter.Label(), origVal, newVal.Value)
+			}
+			continue
+		}
+		// If either is a list, then compare
+		// TODO handle lists better, should recurse and go element
+		// by element to handle things like '1' vs 'int'
+		if isList(origVal) || isList(newVal.Value) {
+			if origVal.Unify(newVal.Value).Kind() == cue.BottomKind {
+				reportChanged(out, vorigIter.Label(), origVal, newVal.Value)
+			}
+			continue
+		}
+		// Both must be structs, so recurse
+		if !isStruct(origVal) || !isStruct(newVal.Value) {
+			panic("should not reach")
+		}
+		rval := ast.NewStruct()
+		err = cueDiff(rval, origVal, newVal.Value)
+		if err != nil {
+			return err
+		}
+		reportInplace(out, vorigIter.Label(), rval)
+		// out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent(vorigIter.Label()), Value: rval})
+	}
+
+	// Loop over keys in new
+	vnewStruct, err := vnew.Struct()
+	if err != nil {
+		return err
+	}
+	vnewIter := vnewStruct.Fields()
+	for vnewIter.Next() {
+		// Report added if doesn't exist in old
+		_, err := vorig.LookupField(vnewIter.Label())
+		if err != nil {
+			reportAdded(out, vnewIter.Label(), vnewIter.Value())
+		}
+	}
+
+	return nil
+}
 
 // TODO, diff3 objects
 // TODO, flat vs nested for [diff,merge,patch]
