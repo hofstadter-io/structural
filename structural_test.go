@@ -13,8 +13,9 @@ import (
 // This test function drives the top level suites for structural
 func TestStructuralTestSuite(t *testing.T) {
 
-    suite.Run(t, new(DiffTestSuite))
-    suite.Run(t, new(PickTestSuite))
+	suite.Run(t, new(CommonTestSuite))
+	suite.Run(t, new(DiffTestSuite))
+	suite.Run(t, new(PickTestSuite))
 
 }
 
