@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hofstadter-io/structural"
 	"github.com/spf13/cobra"
 )
 
@@ -11,6 +12,10 @@ var mergeLong = `merge two Cue values`
 
 func MergeRun(args []string) (err error) {
 
+	s, err := structural.CueMerge(args[0], args[1])
+	if err == nil {
+		fmt.Println(s)
+	}
 	return err
 }
 
@@ -26,6 +31,10 @@ var MergeCmd = &cobra.Command{
 		var err error
 
 		// Argument Parsing
+		if len(args) != 2 {
+			fmt.Println("usage: st merge old new")
+			return
+		}
 
 		err = MergeRun(args)
 		if err != nil {

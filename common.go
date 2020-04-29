@@ -110,3 +110,25 @@ func (pv *pvStruct) ToExpr() *pvExpr {
 		e: &e,
 	}
 }
+
+//////////
+
+func isStruct(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.StructKind
+}
+
+func isList(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.ListKind
+}
+
+func isBuiltin(val cue.Value) bool {
+	k := val.Kind()
+	return k == cue.NullKind ||
+		k == cue.BoolKind ||
+		k == cue.IntKind ||
+		k == cue.FloatKind ||
+		k == cue.StringKind ||
+		k == cue.BytesKind
+}

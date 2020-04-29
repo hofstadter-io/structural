@@ -7,26 +7,6 @@ import (
 	"cuelang.org/go/cue"
 )
 
-func isStruct(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.StructKind
-}
-
-func isList(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.ListKind
-}
-
-func isBuiltin(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.NullKind ||
-		k == cue.BoolKind ||
-		k == cue.IntKind ||
-		k == cue.FloatKind ||
-		k == cue.StringKind ||
-		k == cue.BytesKind
-}
-
 func reportInplace(out *pvStruct, key string, val *pvStruct) {
 	out.Ensure("inplace")
 	inplace := out.Get("inplace")
