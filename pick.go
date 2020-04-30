@@ -22,12 +22,12 @@ func CuePick(sorig, spick string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	vnew := vpicki.Value()
-	if vnew.Err() != nil {
-		return "", vnew.Err()
+	vpick := vpicki.Value()
+	if vpick.Err() != nil {
+		return "", vpick.Err()
 	}
 
-	err = cuePick(out, vorig, vnew)
+	err = cuePick(out, vorig, vpick)
 	if err != nil {
 		return "", err
 	}
@@ -47,13 +47,12 @@ func cuePick(out *pvStruct, vorig, vpick cue.Value) error {
 		pickVal := vpickIter.Value()
 		origLookup, err := vorig.LookupField(key)
 		// Ignore anythig not in orig
-		// TODO or should we error?
 		if err != nil {
 			continue
 		}
 		origVal := origLookup.Value
 
-		// If orig is a builtin and unifies with pick, then us it
+		// If orig is a builtin and unifies with pick, then use it
 		if isBuiltin(origVal) && origVal.Unify(pickVal).Kind() != cue.BottomKind {
 			out.Set(key, *ExprFromValue(origVal))
 			continue
@@ -74,6 +73,7 @@ func cuePick(out *pvStruct, vorig, vpick cue.Value) error {
 					}
 				}
 			} else if isList(pickVal) {
+				// Else, consider element-wise
 				pickListIter, err := pickVal.List()
 				if err != nil {
 					return err
