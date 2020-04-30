@@ -15,6 +15,10 @@ type pvStruct struct {
 	sl *ast.StructLit
 }
 
+type pvList struct {
+	ll *ast.ListLit
+}
+
 type pvExpr struct {
 	e *ast.Expr
 }
@@ -22,6 +26,12 @@ type pvExpr struct {
 func NewpvStruct() *pvStruct {
 	return &pvStruct{
 		sl: ast.NewStruct(),
+	}
+}
+
+func NewpvList() *pvList {
+	return &pvList{
+		ll: ast.NewList(),
 	}
 }
 
@@ -79,6 +89,10 @@ func (pv *pvStruct) Set(key string, expr pvExpr) {
 	}
 }
 
+func (pv *pvList) Append(expr pvExpr) {
+	pv.ll.Elts = append(pv.ll.Elts, *expr.e)
+}
+
 func (pv *pvStruct) ToValue() (*cue.Value, error) {
 	i, err := r.CompileExpr(pv.sl)
 	if err != nil {
@@ -106,6 +120,13 @@ func (pv *pvStruct) ToString() (string, error) {
 
 func (pv *pvStruct) ToExpr() *pvExpr {
 	var e ast.Expr = pv.sl
+	return &pvExpr{
+		e: &e,
+	}
+}
+
+func (pv *pvList) ToExpr() *pvExpr {
+	var e ast.Expr = pv.ll
 	return &pvExpr{
 		e: &e,
 	}

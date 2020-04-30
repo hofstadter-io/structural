@@ -1,27 +1,32 @@
 package structural_test
 
 import (
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/suite"
+	"regexp"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/hofstadter-io/structural"
 )
 
-// Define the suite, and absorb the built-in basic suite
-// functionality from testify - including a T() method which
-// returns the current testing context
 type PickTestSuite struct {
 	suite.Suite
-	VariableThatShouldStartAtFive int
+
+	pickRT *structural.CueRuntime
 }
 
-// Make sure that VariableThatShouldStartAtFive is set to five
-// before each test
-func (suite *PickTestSuite) SetupTest() {
-	suite.VariableThatShouldStartAtFive = 5
+func (suit *PickTestSuite) TestPick() {
+	result, err := structural.CuePick("{a:1, cc: [1,2,3], c:[1,2], x:1, s: {ssss: 2, ss: 2}}", "{a: int, cc: [1,1,1], c: <3, s: {a: int, ss: <5}}")
+	assert.Nil(suit.T(), err)
+	expected := `a: 1
+c: [1, 2]
+s: {
+        ss: 2
 }
+cc: [1]`
 
-// All methods that begin with "Test" are run as tests within a
-// suite.
-func (suite *PickTestSuite) TestPick() {
-	assert.Equal(suite.T(), 5, suite.VariableThatShouldStartAtFive)
-	suite.Equal(5, suite.VariableThatShouldStartAtFive)
+	space := regexp.MustCompile(`\s+`)
+	result = space.ReplaceAllString(result, " ")
+	expected = space.ReplaceAllString(expected, " ")
+	assert.Equal(suit.T(), result, expected)
 }
