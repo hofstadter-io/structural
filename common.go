@@ -106,6 +106,18 @@ func (pv *pvStruct) ToValue() (*cue.Value, error) {
 	return &v, nil
 }
 
+func (pv *pvList) ToValue() (*cue.Value, error) {
+	i, err := r.CompileExpr(pv.ll)
+	if err != nil {
+		return nil, err
+	}
+	v := i.Value()
+	if err = v.Err(); err != nil {
+		return nil, err
+	}
+
+	return &v, nil
+}
 func (pv *pvStruct) ToString() (string, error) {
 	v, err := pv.ToValue()
 	if err != nil {
@@ -118,6 +130,17 @@ func (pv *pvStruct) ToString() (string, error) {
 	return strings.TrimSpace(string(bytes)), nil
 }
 
+func (pv *pvList) ToString() (string, error) {
+	v, err := pv.ToValue()
+	if err != nil {
+		return "", nil
+	}
+	bytes, err := format.Node(v.Syntax())
+	if err != nil {
+		return "", nil
+	}
+	return strings.TrimSpace(string(bytes)), nil
+}
 func (pv *pvStruct) ToExpr() *pvExpr {
 	var e ast.Expr = pv.sl
 	return &pvExpr{
