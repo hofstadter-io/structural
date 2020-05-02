@@ -3,156 +3,39 @@ package structural
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"cuelang.org/go/cue"
-	"cuelang.org/go/cue/ast"
-	"cuelang.org/go/cue/format"
-	"cuelang.org/go/cue/parser"
 )
 
-func isStruct(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.StructKind
+func reportInplace(out *pvStruct, key string, val *pvStruct) {
+	out.Ensure("inplace")
+	inplace := out.Get("inplace")
+	inplace.Set(key, *val.ToExpr())
 }
 
-func isList(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.ListKind
+func reportChanged(out *pvStruct, key string, oldval, newval cue.Value) {
+	out.Ensure("changed")
+	changed := out.Get("changed")
+	what := NewpvStruct()
+	what.Set("from", *ExprFromValue(oldval))
+	what.Set("to", *ExprFromValue(newval))
+	changed.Set(key, *what.ToExpr())
 }
 
-func isBuiltin(val cue.Value) bool {
-	k := val.Kind()
-	return k == cue.NullKind ||
-		k == cue.BoolKind ||
-		k == cue.IntKind ||
-		k == cue.FloatKind ||
-		k == cue.StringKind ||
-		k == cue.BytesKind
+func reportRemoved(out *pvStruct, key string, val cue.Value) {
+	out.Ensure("removed")
+	removed := out.Get("removed")
+	removed.Set(key, *ExprFromValue(val))
 }
 
-func reportInplace(out *ast.StructLit, key string, val *ast.StructLit) {
-	found := false
-	for _, d := range out.Elts {
-		df := d.(*ast.Field)
-		label, _, _ := ast.LabelName(df.Label)
-		if label == "inplace" {
-			sl := df.Value.(*ast.StructLit)
-			sl.Elts = append(sl.Elts,
-				&ast.Field{Label: ast.NewIdent(key), Value: val})
-			found = true
-			break
-		}
-	}
-	if !found {
-		out.Elts = append(out.Elts,
-			&ast.Field{Label: ast.NewIdent("inplace"),
-				Value: ast.NewStruct(
-					&ast.Field{Label: ast.NewIdent(key), Value: val})})
-	}
-}
-
-func reportChanged(out *ast.StructLit, key string, oldval, newval cue.Value) {
-	bytes, err := format.Node(oldval.Syntax())
-	if err != nil {
-		panic(err)
-	}
-	oldexpr, err := parser.ParseExpr("", bytes)
-	if err != nil {
-		panic(err)
-	}
-
-	bytes, err = format.Node(newval.Syntax())
-	if err != nil {
-		panic(err)
-	}
-	newexpr, err := parser.ParseExpr("", bytes)
-	if err != nil {
-		panic(err)
-	}
-
-	found := false
-	for _, d := range out.Elts {
-		df := d.(*ast.Field)
-		label, _, _ := ast.LabelName(df.Label)
-		if label == "changed" {
-			sl := df.Value.(*ast.StructLit)
-			sl.Elts = append(sl.Elts,
-				&ast.Field{Label: ast.NewIdent(key), Value: ast.NewStruct(
-					&ast.Field{Label: ast.NewIdent("from"), Value: oldexpr},
-					&ast.Field{Label: ast.NewIdent("to"), Value: newexpr},
-				)})
-			found = true
-			break
-		}
-	}
-	if !found {
-		out.Elts = append(out.Elts,
-			&ast.Field{Label: ast.NewIdent("changed"),
-				Value: ast.NewStruct(
-					&ast.Field{Label: ast.NewIdent(key),
-						Value: ast.NewStruct(
-							&ast.Field{Label: ast.NewIdent("from"), Value: oldexpr},
-							&ast.Field{Label: ast.NewIdent("to"), Value: newexpr},
-						)})})
-	}
-}
-
-func reportRemoved(out *ast.StructLit, key string, val cue.Value) {
-	bytes, err := format.Node(val.Syntax())
-	if err != nil {
-		panic(err)
-	}
-	expr, err := parser.ParseExpr("", bytes)
-	if err != nil {
-		panic(err)
-	}
-
-	found := false
-	for _, d := range out.Elts {
-		df := d.(*ast.Field)
-		label, _, _ := ast.LabelName(df.Label)
-		if label == "removed" {
-			sl := df.Value.(*ast.StructLit)
-			sl.Elts = append(sl.Elts, &ast.Field{Label: ast.NewIdent(key), Value: expr})
-			found = true
-			break
-		}
-	}
-	if !found {
-		out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent("removed"), Value: ast.NewStruct(&ast.Field{Label: ast.NewIdent(key), Value: expr})})
-	}
-}
-
-func reportAdded(out *ast.StructLit, key string, val cue.Value) {
-	bytes, err := format.Node(val.Syntax())
-	if err != nil {
-		panic(err)
-	}
-	expr, err := parser.ParseExpr("", bytes)
-	if err != nil {
-		panic(err)
-	}
-
-	found := false
-	for _, d := range out.Elts {
-		df := d.(*ast.Field)
-		label, _, _ := ast.LabelName(df.Label)
-		if label == "added" {
-			sl := df.Value.(*ast.StructLit)
-			sl.Elts = append(sl.Elts, &ast.Field{Label: ast.NewIdent(key), Value: expr})
-			found = true
-			break
-		}
-	}
-	if !found {
-		out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent("added"), Value: ast.NewStruct(&ast.Field{Label: ast.NewIdent(key), Value: expr})})
-	}
+func reportAdded(out *pvStruct, key string, val cue.Value) {
+	out.Ensure("added")
+	added := out.Get("added")
+	added.Set(key, *ExprFromValue(val))
 }
 
 func CueDiff(sorig, snew string) (string, error) {
-	var r cue.Runtime
-	out := ast.NewStruct()
+	out := NewpvStruct()
 
 	vorigi, err := r.Compile("", sorig)
 	if err != nil {
@@ -176,20 +59,10 @@ func CueDiff(sorig, snew string) (string, error) {
 		return "", err
 	}
 
-	i, err := r.CompileExpr(out)
-	if err != nil {
-		return "", err
-	}
-	v := i.Value()
-
-	bytes, err := format.Node(v.Syntax())
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(string(bytes)), nil
+	return out.ToString()
 }
 
-func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {
+func cueDiff(out *pvStruct, vorig, vnew cue.Value) error {
 	// Loop over keys in orig
 	vorigStruct, err := vorig.Struct()
 	if err != nil {
@@ -204,7 +77,7 @@ func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {
 			reportRemoved(out, vorigIter.Label(), origVal)
 			continue
 		}
-		// If at least one is a builtin or list, then compare
+		// If at least one is a builtin, then compare
 		if isBuiltin(origVal) || isBuiltin(newVal.Value) {
 			if origVal.Unify(newVal.Value).Kind() == cue.BottomKind {
 				reportChanged(out, vorigIter.Label(), origVal, newVal.Value)
@@ -224,13 +97,12 @@ func cueDiff(out *ast.StructLit, vorig, vnew cue.Value) error {
 		if !isStruct(origVal) || !isStruct(newVal.Value) {
 			panic("should not reach")
 		}
-		rval := ast.NewStruct()
+		rval := NewpvStruct()
 		err = cueDiff(rval, origVal, newVal.Value)
 		if err != nil {
 			return err
 		}
 		reportInplace(out, vorigIter.Label(), rval)
-		// out.Elts = append(out.Elts, &ast.Field{Label: ast.NewIdent(vorigIter.Label()), Value: rval})
 	}
 
 	// Loop over keys in new

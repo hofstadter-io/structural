@@ -9,21 +9,22 @@ import (
 	"github.com/hofstadter-io/structural"
 )
 
-type PickTestSuite struct {
+type MaskTestSuite struct {
 	suite.Suite
 
-	pickRT *structural.CueRuntime
+	maskRT *structural.CueRuntime
 }
 
-func (suit *PickTestSuite) TestPick() {
-	result, err := structural.CuePick("{a:1, cc: [1,2,3], c:[1,2], x:1, s: {ssss: 2, ss: 2}}", "{a: int, cc: [1,1,1], c: <3, s: {a: int, ss: <5}}")
+func (suit *MaskTestSuite) TestMask() {
+	result, err := structural.CueMask("{a:1, cc: [1,2,3], c:[1,2,3], x:1, s: {ssss: 2, ss: 2}}", "{a: int, cc: [1,1,1], c: <3, s: {a: string, ss: >2}}")
 	assert.Nil(suit.T(), err)
-	expected := `a: 1
-c: [1, 2]
+	expected := `x: 1
+c: [3]
 s: {
-        ss: 2
+        ssss: 2
+        ss:   2
 }
-cc: [1]`
+cc: [2, 3]`
 
 	space := regexp.MustCompile(`\s+`)
 	result = space.ReplaceAllString(result, " ")

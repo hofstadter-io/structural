@@ -9,21 +9,24 @@ import (
 	"github.com/hofstadter-io/structural"
 )
 
-type PickTestSuite struct {
+type MergeTestSuite struct {
 	suite.Suite
 
-	pickRT *structural.CueRuntime
+	mergeRT *structural.CueRuntime
 }
 
-func (suit *PickTestSuite) TestPick() {
-	result, err := structural.CuePick("{a:1, cc: [1,2,3], c:[1,2], x:1, s: {ssss: 2, ss: 2}}", "{a: int, cc: [1,1,1], c: <3, s: {a: int, ss: <5}}")
+func (suit *MergeTestSuite) TestMerge() {
+	result, err := structural.CueMerge("{a: 1, c: 2, d: {c:1,b:2}}", "{b : 2, c:3, d: {a: 1,d:2}}")
 	assert.Nil(suit.T(), err)
 	expected := `a: 1
-c: [1, 2]
-s: {
-        ss: 2
-}
-cc: [1]`
+c: 3
+b: 2
+d: {
+        a: 1
+        c: 1
+        b: 2
+        d: 2
+}`
 
 	space := regexp.MustCompile(`\s+`)
 	result = space.ReplaceAllString(result, " ")
