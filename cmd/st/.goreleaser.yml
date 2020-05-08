@@ -67,7 +67,7 @@ release:
   draft: false
   github:
     owner: hofstadter-io
-    name: st
+    name: structural
 
 dockers:
 - binaries:
