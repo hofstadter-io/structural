@@ -10,13 +10,13 @@ builds:
 
   ldflags:
     - -s -w
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.Version={{.Version}}
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.Commit={{.FullCommit}}
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.BuildDate={{.Date}}
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.GoVersion=go1.14
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.BuildOS={{.Os}}
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.BuildArch={{.Arch}}
-    - -X github.com/hofstadter-io/structural/cmd/st/cmd.BuildArm={{.Arm}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.Version={{.Version}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.Commit={{.FullCommit}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.BuildDate={{.Date}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.GoVersion=go1.14
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.BuildOS={{.Os}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.BuildArch={{.Arch}}
+    - -X github.com/hofstadter-io/structural/cmd/st/verinfo.BuildArm={{.Arm}}
 
   env:
   - CGO_ENABLED=0

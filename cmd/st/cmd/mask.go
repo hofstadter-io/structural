@@ -3,9 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
+
+	"github.com/hofstadter-io/structural/cmd/st/ga"
 
 	"github.com/hofstadter-io/structural"
-	"github.com/spf13/cobra"
 )
 
 var maskLong = `extract Cue values with a 'mask'`
@@ -26,6 +30,14 @@ var MaskCmd = &cobra.Command{
 	Short: "extract Cue values with a 'mask'",
 
 	Long: maskLong,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+
+		cs := strings.Fields(cmd.CommandPath())
+		c := strings.Join(cs[1:], "/")
+		ga.SendGaEvent(c, strings.Join(args, "/"), 0)
+
+	},
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error

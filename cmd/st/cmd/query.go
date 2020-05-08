@@ -3,9 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
+
+	"github.com/hofstadter-io/structural/cmd/st/ga"
 
 	"github.com/hofstadter-io/structural"
-	"github.com/spf13/cobra"
 )
 
 var queryLong = `query from Cue values with masks and attributes`
@@ -26,6 +30,14 @@ var QueryCmd = &cobra.Command{
 	Short: "query from Cue values with masks and attributes",
 
 	Long: queryLong,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+
+		cs := strings.Fields(cmd.CommandPath())
+		c := strings.Join(cs[1:], "/")
+		ga.SendGaEvent(c, strings.Join(args, "/"), 0)
+
+	},
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
