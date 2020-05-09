@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cuelang.org/go v0.1.3-0.20200424192631-12927e83d318
+	github.com/google/uuid v1.1.1
 	github.com/hofstadter-io/yagu v0.0.1
 	github.com/parnurzeal/gorequest v0.2.16 // indirect
 	github.com/spf13/cobra v1.0.0
