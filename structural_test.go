@@ -19,6 +19,7 @@ func TestStructuralTestSuite(t *testing.T) {
 	suite.Run(t, new(MaskTestSuite))
 	suite.Run(t, new(PickTestSuite))
 	suite.Run(t, new(QueryTestSuite))
+	suite.Run(t, new(FindAttrsTestSuite))
 
 }
 
